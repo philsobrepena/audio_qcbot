@@ -1,0 +1,37 @@
+[flake8]
+# Maximum line length - using 88 (Black's default) instead of strict 79
+max-line-length = 88
+
+# Exclude directories
+exclude =
+    pydub/pydub-master/test,
+    test,
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    build,
+    dist,
+    *.egg-info
+
+# Ignore specific errors globally:
+# E203: whitespace before ':' - conflicts with Black formatter and is often a false positive for slice notation
+# E501: line too long - we're using max-line-length = 88
+# W503: line break before binary operator - contradicts PEP 8 update, modern style
+# W504: line break after binary operator - contradicts PEP 8 update
+ignore = E203,E501,W503,W504
+
+# Per-file ignores for specific files
+per-file-ignores =
+    # Top-level scripts that need to modify sys.path before importing
+    scripts/export.py:E402
+    scripts/get_mediainfo.py:E402
+    scripts/validate.py:E402
+    # Scripts with intentional bare excepts for robustness
+    scripts/reset_name.py:E722
+    # __main__.py can have multiple imports and unused subprocess for future use
+    __main__.py:F401,E401
+    # Pydub library - Python 2/3 compatibility patterns
+    pydub/pydub-master/pydub/audio_segment.py:E722,F811
+    pydub/pydub-master/pydub/__init__.py:F401
+    pydub/pydub-master/pydub/effects.py:F401

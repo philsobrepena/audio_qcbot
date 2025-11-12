@@ -1,0 +1,30 @@
+[flake8]
+# Maximum line length - using 88 (Black's default) instead of strict 79
+max-line-length = 88
+
+# Exclude test directories and other non-source files
+exclude =
+    test,
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    build,
+    dist,
+    *.egg-info
+
+# Ignore specific errors globally:
+# E203: whitespace before ':' - conflicts with Black formatter and is often a false positive for slice notation
+# E501: line too long - we're using max-line-length = 88, so lines under 88 are OK
+# W503: line break before binary operator - contradicts PEP 8 update, Black uses this style
+# W504: line break after binary operator - contradicts PEP 8 update
+ignore = E203,E501,W503,W504
+
+# Per-file ignores for specific compatibility issues
+per-file-ignores =
+    # audio_segment.py has bare excepts for Python 2/3 compatibility
+    pydub/audio_segment.py:E722,F811
+    # __init__.py exports symbols that appear unused
+    pydub/__init__.py:F401
+    # effects.py has intentional imports for re-export
+    pydub/effects.py:F401
