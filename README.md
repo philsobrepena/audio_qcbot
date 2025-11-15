@@ -1,16 +1,19 @@
 # Audio QC Bot
 
-Audio quality control automation for Manifold storage - runs on OnDemand.
+Audio quality control automation.
 
 ## Purpose
 
-Automated quality control for audio files:
-- **Cache Metadata**: Extract and cache audio file metadata (sample rate, bit depth, loudness) to avoid expensive re-scans
-- **Validate**: Check audio files against quality standards (48kHz, 32-bit, -30dB loudness target)
-- **Low Sample Rate Detection**: Identify and optionally skip files below acceptable sample rate to prevent quality degradation from upsampling
-- **Reformat**: Convert audio to standard 48kHz/32-bit WAV format
-- **Loudness Correction**: Apply gain to bring audio to target loudness (-30dB)
-- **Report**: Generate detailed export reports with duration tracking and processing summary
+Automated QC for audio files:
+- **Cache Metadata**: Extract sample rate, bit depth, loudness (avoids expensive re-scans)
+- **Validate**: Check files against standards (48kHz, 32-bit, -30dB target)
+- **Smart Skipping**:
+  - Low sample rate (<48kHz) - prevents upsampling artifacts
+  - Low bit depth (<24-bit) - prevents upconversion artifacts
+  - Excessive loudness (>-24dB) - cannot auto-fix
+- **Reformat**: Convert to 48kHz/32-bit WAV
+- **Loudness Correction**: Apply gain to -30dB target
+- **Report**: Duration tracking and processing summary
 
 ## Current Workflow
 
@@ -105,8 +108,8 @@ qcbot/
 All configuration is in Python constants for simplicity. Edit `config/acceptable_formats.py`:
 
 ```python
-VALID_SAMPLE_RATES = ['48000']
-VALID_BITS_PER_SAMPLE = ['32']
+VALID_SAMPLE_RATE = '48000'
+VALID_BITS_PER_SAMPLE = '32'
 LOUDNESS_TARGET = -30.0        # Target loudness in dBFS
 LOUDNESS_THRESHOLD_MIN = -32.0 # Minimum acceptable loudness
 ```
@@ -220,10 +223,12 @@ with Pool(processes=8) as pool:
 
 ## Author
 
-- QCBot - Audio Quality Control Client
-Phil Sobrepena - Creative Audio | GenAi - Prototyper | Creative Coder
+- QCBot - Audio Quality Control Client -
+
+Phil Sobrepena
 https://github.com/philsobrepena
 
 - PyDub - Audio Augmentation Library -
+
 James Robert
 https://github.com/jiaaro

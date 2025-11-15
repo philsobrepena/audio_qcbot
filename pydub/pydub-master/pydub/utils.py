@@ -1,15 +1,15 @@
 from __future__ import division
-from io import BufferedReader
 
 import json
 import os
 import re
 import sys
-from subprocess import Popen, PIPE
-from math import log, ceil
+from functools import wraps
+from io import BufferedReader
+from math import ceil, log
+from subprocess import PIPE, Popen
 from tempfile import TemporaryFile
 from warnings import warn
-from functools import wraps
 
 try:
     import audioop
@@ -143,7 +143,7 @@ def make_chunks(audio_segment, chunk_length):
     """
     number_of_chunks = ceil(len(audio_segment) / float(chunk_length))
     return [
-        audio_segment[i * chunk_length:(i + 1) * chunk_length]
+        audio_segment[i * chunk_length : (i + 1) * chunk_length]
         for i in range(int(number_of_chunks))
     ]
 
@@ -257,11 +257,10 @@ def get_extra_info(stderr):
         r"(?! *Stream)((?P<space_end> +)(?P<content_1>.+))?"
     )
     for i in re.finditer(re_stream, stderr):
-        if (i.group("space_end") is not None and
-                len(i.group("space_start")) <= len(i.group("space_end"))):
-            content_line = ",".join(
-                [i.group("content_0"), i.group("content_1")]
-            )
+        if i.group("space_end") is not None and len(i.group("space_start")) <= len(
+            i.group("space_end")
+        ):
+            content_line = ",".join([i.group("content_0"), i.group("content_1")])
         else:
             content_line = i.group("content_0")
         tokens = [x.strip() for x in re.split("[:,]", content_line) if x]
@@ -287,15 +286,11 @@ def mediainfo_json(filepath, read_ahead_limit=-1):
         stdin_data = None
     except TypeError:
         if prober == "ffprobe":
-            command_args += [
-                "-read_ahead_limit", str(read_ahead_limit), "cache:pipe:0"
-            ]
+            command_args += ["-read_ahead_limit", str(read_ahead_limit), "cache:pipe:0"]
         else:
             command_args += ["-"]
         stdin_parameter = PIPE
-        file, close_file = _fd_or_path_or_tempfile(
-            filepath, "rb", tempfile=False
-        )
+        file, close_file = _fd_or_path_or_tempfile(filepath, "rb", tempfile=False)
         file.seek(0)
         stdin_data = file.read()
         if close_file:
