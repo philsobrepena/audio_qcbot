@@ -11,9 +11,7 @@ setup(
     version="0.25.1",
     author="James Robert",
     author_email="jiaaro@gmail.com",
-    description=(
-        "Manipulate audio with an simple and easy high level interface"
-    ),
+    description=("Manipulate audio with an simple and easy high level interface"),
     license="MIT",
     keywords="audio sound high-level",
     url="http://pydub.com",

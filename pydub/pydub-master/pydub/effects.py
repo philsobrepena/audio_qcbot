@@ -1,18 +1,16 @@
-import sys
-import math
 import array
+import math
+import sys
+
+from .exceptions import InvalidDuration, TooManyMissingFrames  # noqa: F401
+from .silence import split_on_silence
 from .utils import (
+    audioop,
     db_to_float,
+    get_min_max_value,
+    make_chunks,
     ratio_to_db,
     register_pydub_effect,
-    make_chunks,
-    audioop,
-    get_min_max_value,
-)
-from .silence import split_on_silence
-from .exceptions import (
-    TooManyMissingFrames,  # noqa: F401
-    InvalidDuration
 )
 
 if sys.version_info >= (3, 0):

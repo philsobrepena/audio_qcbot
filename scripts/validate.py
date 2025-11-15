@@ -1,6 +1,6 @@
-import sys
-import os
 import json
+import os
+import sys
 from pathlib import Path
 
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -8,11 +8,13 @@ sys.path.insert(0, os.path.join(project_root, "pydub", "pydub-master"))
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config.acceptable_formats import (
-    LOUDNESS_THRESHOLD_MIN,
     LOUDNESS_TARGET,
-    VALID_FORMAT_NAMES,
-    VALID_SAMPLE_RATES,
+    LOUDNESS_THRESHOLD_MAX,
+    LOUDNESS_THRESHOLD_MIN,
     VALID_BITS_PER_SAMPLE,
+    VALID_FORMAT_NAME,
+    VALID_SAMPLE_RATE,
+    BIT_DEPTH_THRESHOLD_MIN,
 )
 
 directory = sys.argv[1]
@@ -31,23 +33,34 @@ except FileNotFoundError:
 
 def validate_cache_loudness():
     needs_gain = {}
+    too_loud = {}
     for i in audioinfo:
-        if audioinfo[i]["loudness"] < LOUDNESS_THRESHOLD_MIN:
-            cur = audioinfo[i]["loudness"]
-            difference = LOUDNESS_TARGET - cur
+        loudness = audioinfo[i]["loudness"]
+
+        if loudness < LOUDNESS_THRESHOLD_MIN:
+            difference = LOUDNESS_TARGET - loudness
             needs_gain[i] = [difference, i]
-    return needs_gain
+
+        if loudness > LOUDNESS_THRESHOLD_MAX:
+            difference = loudness - LOUDNESS_THRESHOLD_MAX
+            too_loud[i] = [difference, i]
+            print(
+                f"""{i} is too loud at {loudness}:
+            Exceeds threshold {LOUDNESS_THRESHOLD_MAX} by {difference}
+"""
+            )
+    return needs_gain, too_loud
 
 
 def validate_cache_formats():
     needs_reformatting = set()
     for i in content:
         info = audioinfo[i]
-        if info["format_name"] not in VALID_FORMAT_NAMES:
+        if info["format_name"] != VALID_FORMAT_NAME:
             print(f"🫨 {info['format_name']} file found.")
         if (
-            info["sample_rate"] not in VALID_SAMPLE_RATES
-            or info["bits_per_sample"] not in VALID_BITS_PER_SAMPLE
+            info["sample_rate"] != VALID_SAMPLE_RATE
+            or info["bits_per_sample"] != VALID_BITS_PER_SAMPLE
         ):
             needs_reformatting.add(i)
     return needs_reformatting
@@ -59,7 +72,7 @@ def validate_low_sample_rates():
     Returns a dict with filename and original sample rate for reporting.
     """
     low_sample_rate_files = {}
-    acceptable_rate = int(VALID_SAMPLE_RATES[0])
+    acceptable_rate = int(VALID_SAMPLE_RATE)
 
     for i in content:
         info = audioinfo[i]
@@ -72,6 +85,27 @@ def validate_low_sample_rates():
             }
 
     return low_sample_rate_files
+
+
+def validate_low_bit_depth():
+    """
+    Detect files with bit depths below the minimum acceptable threshold.
+    Converting from very low bit depths (like 16-bit) to 32-bit can create artifacts.
+    Returns a dict with filename and original bit depth for reporting.
+    """
+    low_bit_depth_files = {}
+
+    for i in content:
+        info = audioinfo[i]
+        current_bits = int(info["bits_per_sample"])
+
+        if current_bits < BIT_DEPTH_THRESHOLD_MIN:
+            low_bit_depth_files[i] = {
+                "original_bit_depth": current_bits,
+                "target_bit_depth": int(VALID_BITS_PER_SAMPLE),
+            }
+
+    return low_bit_depth_files
 
 
 def validate_all():

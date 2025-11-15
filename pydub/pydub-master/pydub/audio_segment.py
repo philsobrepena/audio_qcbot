@@ -1,16 +1,17 @@
 from __future__ import division
 
 import array
-import os
-import subprocess
-from tempfile import NamedTemporaryFile
-import wave
-import sys
-import struct
-from .logging_utils import log_conversion, log_subprocess_output
-from .utils import mediainfo_json, fsdecode
 import base64
+import os
+import struct
+import subprocess
+import sys
+import wave
 from collections import namedtuple
+from tempfile import NamedTemporaryFile
+
+from .logging_utils import log_conversion, log_subprocess_output
+from .utils import fsdecode, mediainfo_json
 
 try:
     from StringIO import StringIO
@@ -24,22 +25,22 @@ try:
 except:
     izip = zip
 
-from .utils import (
-    _fd_or_path_or_tempfile,
-    db_to_float,
-    ratio_to_db,
-    get_encoder_name,
-    get_array_type,
-    audioop,
-)
 from .exceptions import (
-    TooManyMissingFrames,
+    CouldntDecodeError,
+    CouldntEncodeError,
     InvalidDuration,
     InvalidID3TagVersion,
     InvalidTag,
-    CouldntDecodeError,
-    CouldntEncodeError,
     MissingAudioParameter,
+    TooManyMissingFrames,
+)
+from .utils import (
+    _fd_or_path_or_tempfile,
+    audioop,
+    db_to_float,
+    get_array_type,
+    get_encoder_name,
+    ratio_to_db,
 )
 
 if sys.version_info >= (3, 0):
@@ -49,7 +50,6 @@ if sys.version_info >= (3, 0):
 
 
 class ClassPropertyDescriptor(object):
-
     def __init__(self, fget, fset=None):
         self.fget = fget
         self.fset = fset
@@ -96,8 +96,8 @@ def extract_wav_headers(data):
     pos = 12  # The size of the RIFF chunk descriptor
     subchunks = []
     while pos + 8 <= len(data) and len(subchunks) < 10:
-        subchunk_id = data[pos: pos + 4]
-        subchunk_size = struct.unpack_from("<I", data[pos + 4: pos + 8])[0]
+        subchunk_id = data[pos : pos + 4]
+        subchunk_size = struct.unpack_from("<I", data[pos + 4 : pos + 8])[0]
         subchunks.append(WavSubChunk(subchunk_id, pos, subchunk_size))
         if subchunk_id == b"data":
             # 'data' is the last subchunk
@@ -152,7 +152,7 @@ def fix_wav_headers(data):
 
     # Set the data size in the data subchunk
     pos = headers[-1].position
-    data[pos + 4: pos + 8] = struct.pack("<I", len(data) - pos - 8)
+    data[pos + 4 : pos + 8] = struct.pack("<I", len(data) - pos - 8)
 
 
 class AudioSegment(object):
@@ -254,7 +254,7 @@ class AudioSegment(object):
             # not scaled up to the 32 bit range.  Other conversions could be
             # implemented.
             i = iter(self._data)
-            padding = {False: b"\x00", True: b"\xFF"}
+            padding = {False: b"\x00", True: b"\xff"}
             for b0, b1, b2 in izip(i, i, i):
                 byte_buffer.write(padding[b2 > b"\x7f"[0]])
                 old_bytes = struct.pack(pack_fmt, b0, b1, b2)
@@ -534,7 +534,7 @@ class AudioSegment(object):
         parameters=None,
         start_second=None,
         duration=None,
-        **kwargs
+        **kwargs,
     ):
         orig_file = file
         file, close_file = _fd_or_path_or_tempfile(file, "rb", tempfile=False)
@@ -693,7 +693,7 @@ class AudioSegment(object):
         parameters=None,
         start_second=None,
         duration=None,
-        **kwargs
+        **kwargs,
     ):
         orig_file = file
         try:
@@ -930,7 +930,7 @@ class AudioSegment(object):
             -a:b).
 
         parameters (list of strings)
-            Aditional ffmpeg/avconv parameters
+            Additional ffmpeg/avconv parameters
 
         tags (dict)
             Set metadata information to destination files
