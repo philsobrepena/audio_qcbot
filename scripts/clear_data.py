@@ -1,10 +1,9 @@
 import os
-import sys
 import shutil
 
-folder = sys.argv[1]
 
-def clear_dir():
+def clear_dir(folder):
+    folder = folder
     for filename in os.listdir(folder):
         file_path = os.path.join(folder, filename)
         try:
@@ -17,19 +16,15 @@ def clear_dir():
 
 
 def clear_json():
-    files = ["audioinfo.json", "export_report.json"]
-    for file in files:
-        file_path = os.path.join(os.getcwd(), file)
+    file = "audiolist.json"
 
-        if os.path.exists(file_path):
-            try:
-                os.remove(file_path)
-                print(f"File {file} deleted.")
-            except Exception as e:
-                print("Failed to delete %s. reason: %s" % (file_path, e))
-        else:
-            print(f"File '{file}' not found in the current directory.")
+    file_path = os.path.join(os.getcwd(), file)
 
-
-clear_dir()
-clear_json()
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+            print(f"File {file} deleted.")
+        except Exception as e:
+            print("Failed to delete %s. reason: %s" % (file_path, e))
+    else:
+        print(f"File '{file}' not found in the current directory.")

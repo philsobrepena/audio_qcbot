@@ -27,7 +27,9 @@ def detect_silence(
 
     # convert silence threshold to a float value
     # (so we can compare it to rms)
-    silence_thresh = db_to_float(silence_thresh) * audio_segment.max_possible_amplitude
+    silence_thresh = (
+        db_to_float(silence_thresh) * audio_segment.max_possible_amplitude
+    )
 
     # find silence and add start and end indicies to the to_cut list
     silence_starts = []
@@ -43,7 +45,7 @@ def detect_silence(
         slice_starts = itertools.chain(slice_starts, [last_slice_start])
 
     for i in slice_starts:
-        audio_slice = audio_segment[i : i + min_silence_len]
+        audio_slice = audio_segment[i:i + min_silence_len]
         if audio_slice.rms <= silence_thresh:
             silence_starts.append(i)
 
@@ -66,7 +68,9 @@ def detect_silence(
         silence_has_gap = silence_start_i > (prev_i + min_silence_len)
 
         if not continuous and silence_has_gap:
-            silent_ranges.append([current_range_start, prev_i + min_silence_len])
+            silent_ranges.append(
+                [current_range_start, prev_i + min_silence_len]
+            )
             current_range_start = silence_start_i
         prev_i = silence_start_i
 
@@ -171,7 +175,7 @@ def split_on_silence(
             range_ii[0] = range_i[1]
 
     return [
-        audio_segment[max(start, 0) : min(end, len(audio_segment))]
+        audio_segment[max(start, 0):min(end, len(audio_segment))]
         for start, end in output_ranges
     ]
 
@@ -186,9 +190,8 @@ def detect_leading_silence(sound, silence_threshold=-50.0, chunk_size=10):
     """
     trim_ms = 0  # ms
     assert chunk_size > 0  # to avoid infinite loop
-    while sound[
-        trim_ms : trim_ms + chunk_size
-    ].dBFS < silence_threshold and trim_ms < len(sound):
+    while (sound[trim_ms:trim_ms + chunk_size].dBFS < silence_threshold and
+           trim_ms < len(sound)):
         trim_ms += chunk_size
 
     # if there is no end it should return the length of the segment

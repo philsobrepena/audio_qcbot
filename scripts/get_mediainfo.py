@@ -2,20 +2,19 @@
 get mediainfo for file collection and cache for use across modules
 """
 
-import json
-import os
 import sys
+import os
+import json
 from multiprocessing import Pool
 
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(project_root, "pydub", "pydub-master"))
-from pathlib import Path
-
 from pydub import AudioSegment
 from pydub.utils import mediainfo
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config.acceptable_formats import VALID_FORMAT_NAME
+from config.acceptable_formats import VALID_FORMAT_NAMES
 
 directory = sys.argv[1]
 content = os.listdir(directory)
@@ -49,7 +48,7 @@ def process_single_file(args):
         for field in media_info_data:
             value = mediainfo(f"{directory}/{file}")[field]
             info[field] = value
-            if field == "format_name" and value != VALID_FORMAT_NAME:
+            if field == "format_name" and value not in VALID_FORMAT_NAMES:
                 warnings.append(f"Non-standard format: {value}")
 
         sound = AudioSegment.from_file(f"{directory}/{file}")

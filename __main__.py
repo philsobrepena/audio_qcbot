@@ -1,7 +1,7 @@
-import os, subprocess, sys, time
+import os, time, sys, subprocess
 
 
-def type_text(text, delay=0.001):
+def type_text(text, delay=0.01):
     """Simulate typing effect"""
     for char in text:
         sys.stdout.write(char)

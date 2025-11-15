@@ -1,7 +1,9 @@
 try:
-    from __builtin__ import max as builtin_max, min as builtin_min
+    from __builtin__ import max as builtin_max
+    from __builtin__ import min as builtin_min
 except ImportError:
-    from builtins import max as builtin_max, min as builtin_min
+    from builtins import max as builtin_max
+    from builtins import min as builtin_min
 import math
 import struct
 
@@ -183,7 +185,7 @@ def findfit(cp1, cp2):
         aj_lm1 = _get_sample(cp1, size, i + len2 - 1)
 
         sum_aij_2 += aj_lm1**2 - aj_m1**2
-        sum_aij_ri = _sum2(memoryview(cp1)[i * size :], cp2, len2)
+        sum_aij_ri = _sum2(memoryview(cp1)[i * size:], cp2, len2)
 
         result = (sum_ri_2 * sum_aij_2 - sum_aij_ri * sum_aij_ri) / sum_aij_2
 
@@ -191,7 +193,9 @@ def findfit(cp1, cp2):
             best_result = result
             best_i = i
 
-    factor = _sum2(memoryview(cp1)[best_i * size :], cp2, len2) / sum_ri_2
+    factor = _sum2(
+        memoryview(cp1)[best_i * size:], cp2, len2
+    ) / sum_ri_2
 
     return best_i, factor
 
@@ -509,8 +513,9 @@ def ratecv(cp, size, nchannels, inrate, outrate, state, weightA=1, weightB=0):
                 prev_i[chan] = cur_i[chan]
                 cur_i[chan] = samples.next()
 
-                cur_i[chan] = (weightA * cur_i[chan] + weightB * prev_i[chan]) / (
-                    weightA + weightB
+                cur_i[chan] = (
+                    (weightA * cur_i[chan] + weightB * prev_i[chan])
+                    / (weightA + weightB)
                 )
 
             frame_count -= 1
@@ -518,8 +523,13 @@ def ratecv(cp, size, nchannels, inrate, outrate, state, weightA=1, weightB=0):
 
         while d >= 0:
             for chan in range(nchannels):
-                cur_o = (prev_i[chan] * d + cur_i[chan] * (outrate - d)) / outrate
-                _put_sample(result, size, out_i, _overflow(cur_o, size))
+                cur_o = (
+                    (prev_i[chan] * d + cur_i[chan] * (outrate - d))
+                    / outrate
+                )
+                _put_sample(
+                    result, size, out_i, _overflow(cur_o, size)
+                )
                 out_i += 1
             d -= inrate
 

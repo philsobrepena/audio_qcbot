@@ -137,14 +137,12 @@ Find your processed files in `audio_reformatted/`:
 
 ## Quality Standards
 
-Files are validated against these standards (configured in `config/acceptable_formats.py`):
+Files are validated against these standards (configurable in `config/acceptable_formats.py`):
 
 - **Sample Rate**: 48000 Hz
 - **Bit Depth**: 32-bit
-- **Bit Depth Minimum**: 24-bit (files below this are skipped - upconversion artifacts)
 - **Loudness Target**: -30.0 dBFS
-- **Loudness Min**: -32.0 dBFS (files below are boosted)
-- **Loudness Max**: -24.0 dBFS (files above are skipped - cannot auto-fix)
+- **Loudness Threshold**: -32.0 dBFS minimum
 
 ## Troubleshooting
 
@@ -217,8 +215,8 @@ python3 scripts/get_mediainfo.py audio_reformatted
 Edit `config/acceptable_formats.py`:
 
 ```python
-VALID_SAMPLE_RATE = '48000'     # Change target sample rate
-VALID_BITS_PER_SAMPLE = '32'     # Change target bit depth
+VALID_SAMPLE_RATES = ['48000']     # Change target sample rate
+VALID_BITS_PER_SAMPLE = ['32']     # Change target bit depth
 LOUDNESS_TARGET = -30.0            # Change target loudness
 LOUDNESS_THRESHOLD_MIN = -32.0     # Change minimum threshold
 ```

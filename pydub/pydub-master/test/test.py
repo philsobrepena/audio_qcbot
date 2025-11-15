@@ -1,36 +1,47 @@
-import os
-import struct
-import sys
-import tempfile
-import unittest
 from functools import partial
-from tempfile import gettempdir, mkdtemp, NamedTemporaryFile
+import os
+import sys
+import unittest
+from tempfile import NamedTemporaryFile, mkdtemp, gettempdir
+import tempfile
+import struct
 
 from pydub import AudioSegment
 from pydub.audio_segment import extract_wav_headers
-from pydub.exceptions import (
-    CouldntDecodeError,
-    InvalidDuration,
-    InvalidID3TagVersion,
-    InvalidTag,
-    MissingAudioParameter,
-)
-from pydub.generators import Pulse, Sawtooth, Sine, Square, Triangle, WhiteNoise
-from pydub.silence import detect_silence, split_on_silence
 from pydub.utils import (
     db_to_float,
+    ratio_to_db,
+    make_chunks,
+    mediainfo,
     get_encoder_name,
     get_supported_decoders,
     get_supported_encoders,
-    make_chunks,
-    mediainfo,
-    ratio_to_db,
+)
+from pydub.exceptions import (
+    InvalidTag,
+    InvalidID3TagVersion,
+    InvalidDuration,
+    CouldntDecodeError,
+    MissingAudioParameter,
+)
+from pydub.silence import (
+    detect_silence,
+    split_on_silence,
+)
+from pydub.generators import (
+    Sine,
+    Square,
+    Pulse,
+    Triangle,
+    Sawtooth,
+    WhiteNoise,
 )
 
 data_dir = os.path.join(os.path.dirname(__file__), "data")
 
 
 class UtilityTests(unittest.TestCase):
+
     def test_db_float_conversions(self):
         self.assertEqual(db_to_float(20), 10)
         self.assertEqual(db_to_float(10, using_amplitude=False), 10)
@@ -52,6 +63,7 @@ class UtilityTests(unittest.TestCase):
 if sys.version_info >= (3, 6):
 
     class PathLikeObjectTests(unittest.TestCase):
+
         class MyPathLike:
             def __init__(self, path):
                 self.path = path
@@ -163,6 +175,7 @@ if sys.version_info >= (3, 6):
 
 
 class FileAccessTests(unittest.TestCase):
+
     def setUp(self):
         self.mp3_path = os.path.join(data_dir, "test1.mp3")
 
@@ -181,6 +194,7 @@ test1wav = test4wav = test1 = test2 = test3 = testparty = testdcoffset = None
 
 
 class AudioSegmentTests(unittest.TestCase):
+
     def setUp(self):
         global test1, test2, test3, testparty, testdcoffset
         if not test1:
@@ -1105,6 +1119,7 @@ class AudioSegmentTests(unittest.TestCase):
 
 
 class SilenceTests(unittest.TestCase):
+
     def setUp(self):
         global test1wav, test4wav
         if not test1wav:
@@ -1170,6 +1185,7 @@ class SilenceTests(unittest.TestCase):
 
 
 class GeneratorTests(unittest.TestCase):
+
     def test_with_smoke(self):
         Sine(440).to_audio_segment()
         Square(440).to_audio_segment()
@@ -1200,6 +1216,7 @@ class GeneratorTests(unittest.TestCase):
 
 
 class NoConverterTests(unittest.TestCase):
+
     def setUp(self):
         self.wave_file = os.path.join(data_dir, "test1.wav")
         self.wave24_file = os.path.join(data_dir, "test1-24bit.wav")
@@ -1316,6 +1333,7 @@ class NoConverterTests(unittest.TestCase):
 
 
 class FilterTests(unittest.TestCase):
+
     def setUp(self):
         global test1wav
         if not test1wav:
@@ -1352,6 +1370,7 @@ class FilterTests(unittest.TestCase):
 
 
 class PartialAudioSegmentLoadTests(unittest.TestCase):
+
     def setUp(self):
         self.wave_path_str = os.path.join(data_dir, "test1.wav")
         self.mp3_path_str = os.path.join(data_dir, "test1.mp3")
